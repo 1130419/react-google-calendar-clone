@@ -1,19 +1,20 @@
-import React from 'react';
-import {Row, Col} from 'antd';
-import TimeSlot from './TimeSlot';
-import {row, timeCol, timeString} from '../styles';
-import moment from 'moment';
+import React from "react";
+import { Row, Col } from "antd";
+import TimeSlot from "./TimeSlot";
+import { row, timeCol, timeString } from "../styles";
+import moment from "moment";
 
-function TimeSlotGroup (props) {
-  const formattedTime = moment ().set ('hours', props.time).format ('h a');
+function TimeSlotGroup(props) {
+  const formattedTime = moment()
+    .set("hours", props.time)
+    .set("minutes", 0)
+    .format("HH:mm");
   return (
     <Row type="flex" key={props.time} style={row}>
       <Col style={timeCol} span={3}>
-        <span style={timeString}>
-          {formattedTime}
-        </span>
+        <span style={timeString}>{formattedTime}</span>
       </Col>
-      {props.weekDays.map (day => (
+      {props.weekDays.map((day) => (
         <TimeSlot
           key={day.dateStamp}
           dateStamp={day.dateStamp}

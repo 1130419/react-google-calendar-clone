@@ -1,41 +1,63 @@
-import React, {Component} from 'react';
-import moment from 'moment';
-import AddEventModal from './AddEventModal';
-import WeekToolbar from './WeekToolbar';
-import WeekHeader from './WeekHeader';
-import TimeSlotGroup from './TimeSlotGroup';
-import EventHighlighter from './EventHighlighter';
-import {times, getAllDaysInTheWeek} from '../../utils';
-import {container} from '../styles';
+import React, { Component } from "react";
+import moment from "moment";
+import AddEventModal from "./AddEventModal";
+import WeekToolbar from "./WeekToolbar";
+import WeekHeader from "./WeekHeader";
+import TimeSlotGroup from "./TimeSlotGroup";
+import EventHighlighter from "./EventHighlighter";
+import { times, getAllDaysInTheWeek, getNextDayInTheWeek } from "../../utils";
+import { container } from "../styles";
 
 class WeekView extends Component {
   state = {
-    startDate: +moment (),
-    weekDays: getAllDaysInTheWeek (),
+    startDate: +moment(),
+    weekDays: getNextDayInTheWeek(moment()),
     showAddEventModal: false,
     eventStart: null,
-    eventEnd: null,
+    eventEnd: null
   };
 
   /**
    * Sets next week days in the state
-  */
+   */
   goToNextWeek = () => {
-    const dateAfter7Days = moment (this.state.startDate).add (7, 'days');
-    this.setState ({
+    const dateAfter7Days = moment(this.state.startDate).add(7, "days");
+    this.setState({
       startDate: +dateAfter7Days,
-      weekDays: getAllDaysInTheWeek (dateAfter7Days),
+      weekDays: getAllDaysInTheWeek(dateAfter7Days)
+    });
+  };
+
+  /**
+   * Sets previous day in the state
+   */
+  goToPreviousDay = () => {
+    const datePreviousDay = moment(this.state.startDate).subtract(1, "day");
+    this.setState({
+      startDate: +datePreviousDay,
+      weekDays: getNextDayInTheWeek(datePreviousDay)
+    });
+  };
+
+  /**
+   * Sets next day in the state
+   */
+  goToNextDay = () => {
+    const dateNextDay = moment(this.state.startDate).add(1, "day");
+    this.setState({
+      startDate: +dateNextDay,
+      weekDays: getNextDayInTheWeek(dateNextDay)
     });
   };
 
   /**
    * Sets previous week days in the state
-  */
+   */
   goToPreviousWeek = () => {
-    const dateBefore7Days = moment (this.state.startDate).subtract (7, 'days');
-    this.setState ({
+    const dateBefore7Days = moment(this.state.startDate).subtract(7, "days");
+    this.setState({
       startDate: +dateBefore7Days,
-      weekDays: getAllDaysInTheWeek (dateBefore7Days),
+      weekDays: getAllDaysInTheWeek(dateBefore7Days)
     });
   };
 
@@ -43,9 +65,9 @@ class WeekView extends Component {
    * Brings today's date in the view
    */
   goToToday = () => {
-    this.setState ({
-      startDate: +moment (),
-      weekDays: getAllDaysInTheWeek (),
+    this.setState({
+      startDate: +moment(),
+      weekDays: getNextDayInTheWeek()
     });
   };
 
@@ -53,65 +75,59 @@ class WeekView extends Component {
    * Opens the add event modal and initialize the date from the cell
    * @param {timeStamp} dateStamp - DateStamp of the cell the user clicked
    * @param {number} time - Time of the cell the user clicked
-  */
+   */
   openAddEventModal = (dateStamp, time) => {
-    const start = moment (dateStamp).set ('hour', time);
-    const end = start.clone ().add (1, 'hour');
+    const start = moment(dateStamp).set("hour", time);
+    const end = start.clone().add(1, "hour");
 
-    this.setState ({
+    this.setState({
       showAddEventModal: true,
       eventStart: +start,
-      eventEnd: +end,
+      eventEnd: +end
     });
   };
 
   /**
    * Closes the add event modal
-  */
+   */
   onCloseAddEventModal = () => {
-    this.setState ({
-      showAddEventModal: false,
+    this.setState({
+      showAddEventModal: false
     });
   };
 
   /**
    * Adds the new event and closes the add event modal
    * @param {string} title - Title of the new event
-  */
-  onOkAddEventModal = title => {
-    this.props.onNewEvent ({
+   */
+  onOkAddEventModal = (title) => {
+    this.props.onNewEvent({
       title,
       start: this.state.eventStart,
-      end: this.state.eventEnd,
+      end: this.state.eventEnd
     });
-    this.setState ({
-      showAddEventModal: false,
+    this.setState({
+      showAddEventModal: false
     });
   };
 
   /**
    * Saves the timeStamps of the new event in the state
    * @param {arr: moment, moment} - Array containing start and end date of the new event
-  */
-  onCurrentEventTimeChange = dates => {
-    this.setState ({
+   */
+  onCurrentEventTimeChange = (dates) => {
+    this.setState({
       eventStart: +dates[0],
-      eventEnd: +dates[1],
+      eventEnd: +dates[1]
     });
   };
 
-  render () {
-    const {
-      weekDays,
-      showAddEventModal,
-      eventStart,
-      eventEnd,
-      startDate,
-    } = this.state;
-    const {events} = this.props;
+  render() {
+    const { weekDays, showAddEventModal, eventStart, eventEnd, startDate } =
+      this.state;
+    const { events } = this.props;
     return (
       <div style={container}>
-
         <AddEventModal
           visible={showAddEventModal}
           onCancel={this.onCloseAddEventModal}
@@ -125,13 +141,15 @@ class WeekView extends Component {
         <WeekToolbar
           goToPreviousWeek={this.goToPreviousWeek}
           goToNextWeek={this.goToNextWeek}
+          goToPreviousDay={this.goToPreviousDay}
+          goToNextDay={this.goToNextDay}
           startDate={startDate}
           goToToday={this.goToToday}
         />
 
         <WeekHeader weekDays={weekDays} />
 
-        {times.map (time => (
+        {times.map((time) => (
           <TimeSlotGroup
             key={time}
             time={time}
@@ -140,17 +158,17 @@ class WeekView extends Component {
             openAddEventModal={this.openAddEventModal}
           >
             {events[time] &&
-              events[time].map (
-                event =>
-                  event.startWeek <= moment (startDate).week () &&
-                  event.endWeek >= moment (startDate).week () &&
-                  <EventHighlighter
-                    onEventDelete={this.props.onEventDelete}
-                    onEventUpdate={this.props.onEventUpdate}
-                    key={event.title + event.end + event.start}
-                    startDate={startDate}
-                    event={event}
-                  />
+              events[time].map(
+                (event) =>
+                  moment(startDate).isSame(moment(event.start), "day") && (
+                    <EventHighlighter
+                      onEventDelete={this.props.onEventDelete}
+                      onEventUpdate={this.props.onEventUpdate}
+                      key={event.title + event.end + event.start}
+                      startDate={startDate}
+                      event={event}
+                    />
+                  )
               )}
           </TimeSlotGroup>
         ))}
